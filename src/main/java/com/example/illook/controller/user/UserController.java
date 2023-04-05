@@ -143,13 +143,14 @@ public class UserController {
     //내 프로필
     @GetMapping("/user")
     public ApiResponse getMyProfile(@AuthenticationPrincipal User user){
-        Map profile = userService.getProfile(Integer.parseInt(user.getUserIdx());
+        int userIdx = Integer.parseInt(user.getUserIdx());
+        Map profile = userService.getProfile(userIdx,userIdx);
         return ApiResponse.createSuccess(profile);
     }
     //다른 사람 프로필
     @GetMapping("/user/{userIdx}")
     public ApiResponse getUserProfile(@AuthenticationPrincipal User user, @PathVariable int userIdx){
-        Map profile = userService.getProfile(userIdx, Integer.parseInt(user.getUserIdx());
+        Map profile = userService.getProfile(userIdx, Integer.parseInt(user.getUserIdx()));
         return ApiResponse.createSuccess(profile);
     }
 
@@ -191,19 +192,7 @@ public class UserController {
     //로그인
     @PostMapping("/user/login")
     public ApiResponse login(@RequestBody Map<String, String> user, HttpServletResponse response) {
-
-        System.out.println("user" + user);
-
-        if (empty(userMapper.getUser(user.get("id")))) {
-            throw new IllegalStateException("아이디 또는 비밀번호가 맞지 않습니다");
-        }
-        User user2 = userMapper.getUser(user.get("id"));
-        if (!passwordEncoder.matches(user.get("password"), user2.getPassword())) {
-            throw new IllegalStateException("아이디 또는 비밀번호가 맞지 않습니다");
-        }
-
-        userService.login(user2, response);
-
+        userService.login(user, response);
         return ApiResponse.createSuccessWithNoContent();
     }
 

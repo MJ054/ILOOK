@@ -26,7 +26,7 @@ public interface UserMapper {
     int deleteUser(@Param("id") int id);
 
 
-    @Select("SELECT * FROM USER WHERE user_idx=#{username}")
+    @Select("SELECT * FROM USER WHERE id=#{username}")
     User findById(@Param("username") String username);
 
     @Select("SELECT * FROM USER WHERE id=#{id}")

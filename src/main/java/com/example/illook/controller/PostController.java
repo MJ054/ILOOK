@@ -87,10 +87,6 @@ public class PostController {
         return ApiResponse.createSuccessWithNoContent();
     }
 
-    @PostMapping("post/like/test")
-    public ApiResponse postLikes(){
-        return ApiResponse.createSuccessWithNoContent();
-    }
 
     //메인 페이지 사진
     @GetMapping("post/main/{category}")

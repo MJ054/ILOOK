@@ -3,13 +3,16 @@ package com.example.illook.service;
 import com.example.illook.mapper.PostMapper;
 import com.example.illook.mapper.UserMapper;
 import com.example.illook.model.Image;
+import com.example.illook.model.User;
 import com.example.illook.payload.SignUpRequest;
 import com.example.illook.payload.TokenRequestDto;
-import com.example.illook.model.User;
 import com.example.illook.security.JwtTokenProvider;
 import com.example.illook.util.FileHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserMapper userMapper;
@@ -33,6 +37,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final FileHandler fileHandler;
     private final PostMapper postMapper;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
 
 
     @Transactional
@@ -83,24 +89,26 @@ public class UserService {
     }
 
     //로그인
-    public void login(User user2, HttpServletResponse response){
-        String accessToken = jwtTokenProvider.createToken(user2.getUserIdx(), user2.getRole());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user2.getUserIdx(), user2.getRole());
-        jwtTokenProvider.setHeaderAccessToken(response, accessToken);
-        jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
+    public void login(Map user, HttpServletResponse response){
 
-        userMapper.saveRefreshToken(refreshToken, user2.getId());
+        //사용자 인증
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.get("id"), user.get("password"));
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+        //토큰 생성
+        String accessToken = jwtTokenProvider.createToken(authentication.getName(), authentication.getAuthorities().toString());
+        String refreshToken = jwtTokenProvider.createRefreshToken(authentication.getName(), authentication.getAuthorities().toString());
+        jwtTokenProvider.setHeaderAccessToken(response, accessToken);
+
+        //리프레시 토큰 DB에 저장
+        userMapper.saveRefreshToken(refreshToken, authentication.getName());
     }
 
     public Map getProfile(int userIdx, int userIdx2) {
         List<Map> images = postMapper.getImage(userIdx);
-        Map data = userMapper.getUserProfile(userIdx,userIdx);
+        Map data = userMapper.getUserProfile(userIdx,userIdx2);
         data.put("images",images);
 
-        List<Map> images = postMapper.getImage(userIdx);
-        Map data = userMapper.getUserProfile(userIdx, Integer.parseInt(user.getUserIdx()));
-        data.put("images", images);
-
-        return data
+        return data;
     }
 }

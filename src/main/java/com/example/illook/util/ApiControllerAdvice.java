@@ -18,14 +18,13 @@ public class ApiControllerAdvice {
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiResponse<?>> aaa2(IllegalStateException e){
+    public ResponseEntity<ApiResponse<?>> IllegalStateException(IllegalStateException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.createError(e.getMessage()));
     }
 
     //컨트롤러의 코드상에서 파라미터를 요구하였으나, 결여되있을 때 발생하는 에러러
-   @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ApiResponse<?>> missing(MissingServletRequestParameterException e){
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponse<?>> MissingServletRequestParameterException(MissingServletRequestParameterException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.createError(e.getMessage()));
     }
-
 }

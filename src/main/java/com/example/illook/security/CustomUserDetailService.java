@@ -25,7 +25,7 @@ public class CustomUserDetailService implements UserDetailsService, OAuth2UserSe
     private final UserMapper userProfileMapper;
 
 
-    //사용자를 찾아서 userDetails로 return
+    //사용자를 찾아서 userDetails로
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (userProfileMapper.findById(username) == null) {
@@ -33,6 +33,8 @@ public class CustomUserDetailService implements UserDetailsService, OAuth2UserSe
         }
         return userProfileMapper.findById(username);
     }
+
+
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
