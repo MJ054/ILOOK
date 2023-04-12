@@ -1,4 +1,4 @@
-package com.example.illook.payload;
+package com.example.illook.payload.BoardRequestDto;
 
 import com.example.illook.model.Product;
 import lombok.Data;

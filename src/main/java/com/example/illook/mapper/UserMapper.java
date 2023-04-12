@@ -29,8 +29,8 @@ public interface UserMapper {
     @Select("SELECT * FROM USER WHERE id=#{username}")
     User findById(@Param("username") String username);
 
-    @Select("SELECT * FROM USER WHERE id=#{id}")
-    User getUser(@Param("id") String id);
+    @Select("SELECT id, role, refresh_token FROM USER WHERE id=#{id}")
+    Map getUserRefreshToken(@Param("id") String id);
 
     @Insert("INSERT INTO user(email,nickname) VALUES(#{user.email},#{user.nickname})")
     void saveOAuth2User(@Param("user") User user);

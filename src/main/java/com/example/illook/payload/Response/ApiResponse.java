@@ -1,4 +1,4 @@
-package com.example.illook.util;
+package com.example.illook.payload.Response;
 
 import lombok.AccessLevel;
 import lombok.Getter;

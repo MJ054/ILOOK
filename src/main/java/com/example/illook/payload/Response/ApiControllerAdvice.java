@@ -1,4 +1,4 @@
-package com.example.illook.util;
+package com.example.illook.payload.Response;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -4,10 +4,9 @@ import com.example.illook.mapper.ImageMapper;
 import com.example.illook.mapper.PostMapper;
 import com.example.illook.mapper.UserMapper;
 import com.example.illook.model.User;
-import com.example.illook.util.ApiResponse;
-import com.example.illook.payload.EmailRequest;
-import com.example.illook.payload.SignUpRequest;
-import com.example.illook.payload.TokenRequestDto;
+import com.example.illook.payload.Response.ApiResponse;
+import com.example.illook.payload.UserRequestDto.*;
+import com.example.illook.security.JwtTokenProvider;
 import com.example.illook.service.MailService;
 import com.example.illook.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +36,7 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
     private final MailService mailService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     //아이디 중복확인
     @PostMapping("/user/check/id/duplication")
@@ -103,11 +103,11 @@ public class UserController {
 
     //유저 회원가입
     @PostMapping("/user")
-    public ApiResponse saveUser(@Valid @RequestBody SignUpRequest payload, BindingResult bindingResult) throws MethodArgumentNotValidException {
+    public ApiResponse saveUser(@Valid @RequestBody SignUp signUp, BindingResult bindingResult) throws MethodArgumentNotValidException {
 
         //저장 단계에서는 아이디,닉네임 중복확인 안한다고 가정한다.
 
-        if (!payload.getPassword().equals(payload.getPassword2())) {
+        if (!signUp.getPassword().equals(signUp.getPassword2())) {
             bindingResult.rejectValue("password2","range","비밀번호가 같지 않습니다");
         }
         if(bindingResult.hasErrors()) {
@@ -115,31 +115,13 @@ public class UserController {
         }
 
         //유저 회원가입
-       userService.saveUser(payload);
+       userService.saveUser(signUp);
        return ApiResponse.createSuccessWithNoContent();
     }
 
-
-    // 로그인 하기 않은 사용자 : 내 프로필 없음, 다른 사용자 프로필 볼 수 있음 -> 분리시켜야 함!!
-    //유저 profile 상세
-    /*@GetMapping("/user/{userIdx}")
-    public ApiResponse getUserProfile(@AuthenticationPrincipal User user, @PathVariable int userIdx){
-        if(userIdx == -1){
-            //내프로필
-            List<Map> images = postMapper.getImage(Integer.parseInt(user.getUserIdx()));
-            Map data = userMapper.getUserProfile(Integer.parseInt(user.getUserIdx()),Integer.parseInt(user.getUserIdx()));
-            data.put("images",images);
-            return ApiResponse.createSuccess(data);
-        }else {
-            //다른 사람 프로필
-            List<Map> images = postMapper.getImage(userIdx);
-            Map data = userMapper.getUserProfile(userIdx, Integer.parseInt(user.getUserIdx()));
-            data.put("images", images);
-            return ApiResponse.createSuccess(data);
-        }
-    }*/
-
-    //[수정!!!!]
+    /*
+    * test
+    * */
     //내 프로필
     @GetMapping("/user")
     public ApiResponse getMyProfile(@AuthenticationPrincipal User user){
@@ -147,6 +129,9 @@ public class UserController {
         Map profile = userService.getProfile(userIdx,userIdx);
         return ApiResponse.createSuccess(profile);
     }
+    /*
+     * test
+     * */
     //다른 사람 프로필
     @GetMapping("/user/{userIdx}")
     public ApiResponse getUserProfile(@AuthenticationPrincipal User user, @PathVariable int userIdx){
@@ -190,17 +175,36 @@ public class UserController {
     }
 
     //로그인
+    /*
+    * test
+    * */
     @PostMapping("/user/login")
-    public ApiResponse login(@RequestBody Map<String, String> user, HttpServletResponse response) {
-        userService.login(user, response);
+    public ApiResponse login(@Valid @RequestBody Login login, HttpServletResponse response) {
+
+        TokenInfo tokenInfo = userService.login(login);
+        //프론트에 보낼 AT,RT
+        jwtTokenProvider.setHeaderAccessToken(response, tokenInfo.getAccessToken());
+        jwtTokenProvider.setHeaderRefreshToken(response, tokenInfo.getRefreshToken());
         return ApiResponse.createSuccessWithNoContent();
     }
 
-    @PostMapping("/user/logout")
+    //토큰 재발급
+    @PostMapping("/user/reissue")
+    public ApiResponse reissue(@Valid @RequestBody Reissue reissue, HttpServletResponse response) {
+
+        TokenInfo tokenInfo = userService.reissue(reissue);
+        //프론트에 보낼 AT,RT
+        jwtTokenProvider.setHeaderAccessToken(response, tokenInfo.getAccessToken());
+        jwtTokenProvider.setHeaderRefreshToken(response, tokenInfo.getRefreshToken());
+        return ApiResponse.createSuccessWithNoContent();
+    }
+
+
+    /*@PostMapping("/user/logout")
     public ApiResponse logout(@RequestBody TokenRequestDto tokenRequestDto) {
         userService.logout(tokenRequestDto);
         return ApiResponse.createSuccessWithNoContent();
-    }
+    }*/
 
 }
 

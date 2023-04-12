@@ -40,7 +40,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         mapper.saveOAuth2User(user);
         
-        String accessToken = jwtTokenProvider.createToken(user.getEmail(), "USER");
+        String accessToken = jwtTokenProvider.createAccessToken(user.getEmail(), "USER");
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), "USER");
         jwtTokenProvider.setHeaderAccessToken(response, accessToken);
         jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);

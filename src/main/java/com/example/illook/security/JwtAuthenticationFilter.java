@@ -10,7 +10,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RequiredArgsConstructor
@@ -22,36 +21,14 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
         String accessToken = jwtTokenProvider.resolveAccessToken((HttpServletRequest) request);
-        String refreshToken = jwtTokenProvider.resolveRefreshToken((HttpServletRequest)request);
 
-        checkToken(accessToken, refreshToken, (HttpServletResponse) response);
+        //aceess 토큰 유효성 체크
+            if (accessToken !=null  && jwtTokenProvider.validateToken(accessToken)){
+                //토큰이 유효하면 SecurityContextHolder에 저장
+                Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
 
         chain.doFilter(request, response);
-    }
-
-    public void checkToken(String accessToken, String refreshToken, HttpServletResponse response){
-
-        if(accessToken !=null  && !accessToken.equals("0")){
-            if(jwtTokenProvider.validateToken(accessToken)) {
-                    Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
-            else if(!jwtTokenProvider.validateToken(accessToken) && refreshToken != null){
-                //accessToken 정보로 refreshToken 가져오는 함수
-                boolean validateRefreshToken = jwtTokenProvider.validateToken(refreshToken);
-                boolean isRefreshToken = jwtTokenProvider.validateToken(refreshToken);
-                if(validateRefreshToken && isRefreshToken){
-                    String userPk = jwtTokenProvider.getUserPk(refreshToken);
-                    String role = jwtTokenProvider.getRoles(userPk);
-
-                    String newAccessToken = jwtTokenProvider.createToken(userPk, role);
-                    jwtTokenProvider.setHeaderAccessToken((HttpServletResponse) response, newAccessToken);
-
-                    Authentication authentication = jwtTokenProvider.getAuthentication(newAccessToken);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
-            }
-        }
-
     }
 }

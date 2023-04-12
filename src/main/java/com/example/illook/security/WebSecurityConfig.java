@@ -1,7 +1,9 @@
 package com.example.illook.security;
 
+import com.example.illook.mapper.UserMapper;
 import com.example.illook.security.OAuth2.OAuth2SuccessHandler;
-import com.example.illook.util.ApiResponse;
+import com.example.illook.payload.Response.ApiResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Base64;
+import java.util.HashMap;
 
 @Configuration
 @RequiredArgsConstructor
@@ -31,6 +35,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final CustomUserDetailService customUserDetailService;
     private final RedisTemplate redisTemplate;
+    private final UserMapper userMapper;
 
     // 암호화에 필요한 PasswordEncoder 를 Bean 등록합니다.
     @Bean
@@ -69,8 +74,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // 에러 헨들링
                 http.exceptionHandling()
                 .authenticationEntryPoint((request, response, authException) -> {
-                    String exception = (String)request.getAttribute("exception");
-                    response(response, "인증이 안된 사용자입니다.");
+
+                    String exception = (String) request.getAttribute("exception");
+
+                    response(response, authException.getMessage());
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
                     response(response, "권한이 없는 사용자입니다.");
@@ -86,5 +93,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         response.getWriter().println(new ObjectMapper().writeValueAsString(ApiResponse.createError(message)));
     }
 
+    public static HashMap<String, String> getPayloadByToken(String token) {
+        try {
+            String[] splitJwt = token.split("\\.");
+
+            Base64.Decoder decoder = Base64.getDecoder();
+            String payload = new String(decoder.decode(splitJwt[1] .getBytes()));
+            System.out.println("payload"+payload);
+            return new ObjectMapper().readValue(payload, HashMap.class);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            return null;
+        }
+    }
 
 }

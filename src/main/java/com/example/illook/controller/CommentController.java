@@ -3,7 +3,7 @@ package com.example.illook.controller;
 import com.example.illook.mapper.CommentMapper;
 import com.example.illook.model.Comment;
 import com.example.illook.model.User;
-import com.example.illook.util.ApiResponse;
+import com.example.illook.payload.Response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

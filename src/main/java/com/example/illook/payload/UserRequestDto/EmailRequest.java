@@ -1,4 +1,4 @@
-package com.example.illook.payload;
+package com.example.illook.payload.UserRequestDto;
 
 import lombok.Data;
 

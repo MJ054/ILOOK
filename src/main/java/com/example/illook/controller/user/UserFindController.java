@@ -1,9 +1,9 @@
 package com.example.illook.controller.user;
 
 import com.example.illook.mapper.UserMapper;
-import com.example.illook.util.ApiResponse;
-import com.example.illook.payload.EmailRequest;
-import com.example.illook.payload.PasswordRequest;
+import com.example.illook.payload.Response.ApiResponse;
+import com.example.illook.payload.UserRequestDto.EmailRequest;
+import com.example.illook.payload.UserRequestDto.PasswordRequest;
 import com.example.illook.service.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -81,7 +81,7 @@ public class UserFindController {
             throw new MethodArgumentNotValidException(null, bindingResult);
         }
 
-        //비밀번호 변경 부분!!
+        //비밀번호 변경
         mapper.changePwd(passwordEncoder.encode(passwordRequest.getPassword()), id);
         return ApiResponse.createSuccess("비밀번호가 변경되었습니다");
     }

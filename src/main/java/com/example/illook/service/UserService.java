@@ -4,8 +4,7 @@ import com.example.illook.mapper.PostMapper;
 import com.example.illook.mapper.UserMapper;
 import com.example.illook.model.Image;
 import com.example.illook.model.User;
-import com.example.illook.payload.SignUpRequest;
-import com.example.illook.payload.TokenRequestDto;
+import com.example.illook.payload.UserRequestDto.*;
 import com.example.illook.security.JwtTokenProvider;
 import com.example.illook.util.FileHandler;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +15,8 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +30,7 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final JwtTokenProvider jwtTokenProvider;
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final FileHandler fileHandler;
     private final PostMapper postMapper;
@@ -41,7 +38,7 @@ public class UserService {
 
 
 
-    @Transactional
+    /*@Transactional
     public void logout(TokenRequestDto tokenRequestDto){
         // 로그아웃 하고 싶은 토큰이 유효한 지 먼저 검증하기
         if (!jwtTokenProvider.validateToken(tokenRequestDto.getAccessToken())){
@@ -61,18 +58,18 @@ public class UserService {
         Long expiration = jwtTokenProvider.getExpiration(tokenRequestDto.getAccessToken());
         redisTemplate.opsForValue().set(tokenRequestDto.getAccessToken(),"logout",expiration, TimeUnit.MILLISECONDS);
 
-    }
+    }*/
 
     //유저 저장
-    public void saveUser(SignUpRequest payload){
+    public void saveUser(SignUp signUp){
         String[] items = {"dog-g036b63d18_1920.jpg","girl-g996e72491_1920.jpg","tiktok-ga428cefdb_1920.jpg","woman-ga0cc40122_1920.jpg"};
         Random rand = new Random();
 
         User user = User.builder()
-                .id(payload.getId())
-                .email(payload.getEmail())
-                .password(passwordEncoder.encode(payload.getPassword()))
-                .nickname(payload.getNickname())
+                .id(signUp.getId())
+                .email(signUp.getEmail())
+                .password(passwordEncoder.encode(signUp.getPassword()))
+                .nickname(signUp.getNickname())
                 .profileImage("images"+ File.separator +"basic"+ File.separator +items[rand.nextInt(4)])
                 .role("ROLE_USER")
                 .build();
@@ -89,26 +86,52 @@ public class UserService {
     }
 
     //로그인
-    public void login(Map user, HttpServletResponse response){
-
+    public TokenInfo login(Login login){
         //사용자 인증
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.get("id"), user.get("password"));
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(login.getId(), login.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         //토큰 생성
-        String accessToken = jwtTokenProvider.createToken(authentication.getName(), authentication.getAuthorities().toString());
-        String refreshToken = jwtTokenProvider.createRefreshToken(authentication.getName(), authentication.getAuthorities().toString());
-        jwtTokenProvider.setHeaderAccessToken(response, accessToken);
+        TokenInfo tokenInfo = jwtTokenProvider.createAllToken(authentication);
 
-        //리프레시 토큰 DB에 저장
-        userMapper.saveRefreshToken(refreshToken, authentication.getName());
+        //리프레시 토큰 redis에 저장(expirationTime 설정을 통해 자동 삭제 처리)
+        redisTemplate.opsForValue().set("RT:"+authentication.getName(),
+                tokenInfo.getRefreshToken(), tokenInfo.getRefreshTokenExpirationTime(), TimeUnit.MICROSECONDS);
+        return tokenInfo;
     }
+
+    //토큰 재발급을 위한 reissue()
+    public TokenInfo reissue(Reissue reissue){
+        // refresh token 검증
+
+        if(!jwtTokenProvider.validateToken(reissue.getRefreshToken())){
+            throw new IllegalArgumentException("Refresh Token 정보가 유효하지 않습니다.");
+        }
+
+        // Access Token 에서 User email 를 가져옴
+        Authentication authentication = jwtTokenProvider.getAuthentication(reissue.getAccessToken());
+
+        // Redis 에서 User email 을 기반으로 저장된 Refresh Token 값을 가져옴
+        String refreshToken = redisTemplate.opsForValue().get("RT:"+authentication.getName());
+
+        if(refreshToken != null && !refreshToken.equals(reissue.getRefreshToken())){
+            throw new IllegalStateException("Refresh Token 정보가 일치하지 않습니다");
+        }
+        // 새로운 토큰 생성
+        TokenInfo tokenInfo = jwtTokenProvider.createAllToken(authentication);
+
+        // RefreshToken Redis 업데이트
+        redisTemplate.opsForValue().set("RT:" + authentication.getName(), tokenInfo.getRefreshToken(),
+                        tokenInfo.getRefreshTokenExpirationTime(), TimeUnit.MILLISECONDS);
+
+        return tokenInfo;
+    }
+
 
     public Map getProfile(int userIdx, int userIdx2) {
         List<Map> images = postMapper.getImage(userIdx);
         Map data = userMapper.getUserProfile(userIdx,userIdx2);
         data.put("images",images);
-
         return data;
     }
 }
