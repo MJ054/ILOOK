@@ -141,16 +141,16 @@ public class JwtTokenProvider {
 
 
     // 리프레시 토큰의 유효성 + 만료일자 확인
-    public boolean validateToken(String jwtToken) {
+    public boolean validateToken(String jwtToken, HttpServletRequest request) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
             return !claims.getBody().getExpiration().before(new Date());
         }
         catch (ExpiredJwtException e) {
             e.printStackTrace();
-        } catch (JwtException e) {
+            request.setAttribute("exceptionType","ExpiredJwt");
+        }catch (JwtException e) {
             e.printStackTrace();
-
         }
         return false;
     }

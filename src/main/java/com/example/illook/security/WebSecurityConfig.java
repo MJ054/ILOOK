@@ -75,9 +75,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 http.exceptionHandling()
                 .authenticationEntryPoint((request, response, authException) -> {
 
-                    String exception = (String) request.getAttribute("exception");
+                    String exception = (String) request.getAttribute("exceptionType");
 
-                    response(response, authException.getMessage());
+                    if(exception != null && exception.equals("ExpiredJwt")){
+                        response(response, "JWT 토큰이 만료되었습니다.");
+                    }else{
+                        response(response, "로그인 오류가 발생하였습니다.");
+                    }
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
                     response(response, "권한이 없는 사용자입니다.");

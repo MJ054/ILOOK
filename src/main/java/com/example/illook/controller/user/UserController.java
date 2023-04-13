@@ -190,9 +190,9 @@ public class UserController {
 
     //토큰 재발급
     @PostMapping("/user/reissue")
-    public ApiResponse reissue(@Valid @RequestBody Reissue reissue, HttpServletResponse response) {
+    public ApiResponse reissue(@Valid @RequestBody Reissue reissue, HttpServletResponse response, HttpServletRequest request) {
 
-        TokenInfo tokenInfo = userService.reissue(reissue);
+        TokenInfo tokenInfo = userService.reissue(reissue, request);
         //프론트에 보낼 AT,RT
         jwtTokenProvider.setHeaderAccessToken(response, tokenInfo.getAccessToken());
         jwtTokenProvider.setHeaderRefreshToken(response, tokenInfo.getRefreshToken());

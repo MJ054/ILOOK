@@ -85,10 +85,10 @@ public class UserService {
     }
 
     //토큰 재발급을 위한 reissue()
-    public TokenInfo reissue(Reissue reissue){
+    public TokenInfo reissue(Reissue reissue, HttpServletRequest request){
 
         // refresh token 검증
-        if(!jwtTokenProvider.validateToken(reissue.getRefreshToken())){
+        if(!jwtTokenProvider.validateToken(reissue.getRefreshToken(), request)){
             throw new IllegalArgumentException("Refresh Token 정보가 유효하지 않습니다.");
         }
 
@@ -116,7 +116,7 @@ public class UserService {
 
         String accessToken = jwtTokenProvider.resolveAccessToken((HttpServletRequest) request);
         // 로그아웃 하고 싶은 토큰이 유효한 지 먼저 검증하기
-        if (!jwtTokenProvider.validateToken(accessToken)){
+        if (!jwtTokenProvider.validateToken(accessToken, request)){
             throw new IllegalArgumentException("로그아웃 : 유효하지 않은 토큰입니다.");
         }
 
