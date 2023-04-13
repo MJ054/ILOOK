@@ -200,11 +200,11 @@ public class UserController {
     }
 
 
-    /*@PostMapping("/user/logout")
-    public ApiResponse logout(@RequestBody TokenRequestDto tokenRequestDto) {
-        userService.logout(tokenRequestDto);
+    @PostMapping("/user/logout")
+    public ApiResponse logout(HttpServletRequest request) {
+        userService.logout(request);
         return ApiResponse.createSuccessWithNoContent();
-    }*/
+    }
 
 }
 

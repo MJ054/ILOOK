@@ -4,7 +4,10 @@ import com.example.illook.mapper.PostMapper;
 import com.example.illook.mapper.UserMapper;
 import com.example.illook.model.Image;
 import com.example.illook.model.User;
-import com.example.illook.payload.UserRequestDto.*;
+import com.example.illook.payload.UserRequestDto.Login;
+import com.example.illook.payload.UserRequestDto.Reissue;
+import com.example.illook.payload.UserRequestDto.SignUp;
+import com.example.illook.payload.UserRequestDto.TokenInfo;
 import com.example.illook.security.JwtTokenProvider;
 import com.example.illook.util.FileHandler;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +18,10 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -38,27 +43,6 @@ public class UserService {
 
 
 
-    /*@Transactional
-    public void logout(TokenRequestDto tokenRequestDto){
-        // 로그아웃 하고 싶은 토큰이 유효한 지 먼저 검증하기
-        if (!jwtTokenProvider.validateToken(tokenRequestDto.getAccessToken())){
-            throw new IllegalArgumentException("로그아웃 : 유효하지 않은 토큰입니다.");
-        }
-
-        // Access Token에서 User email을 가져온다
-        Authentication authentication = jwtTokenProvider.getAuthentication(tokenRequestDto.getAccessToken());
-
-        // Redis에서 해당 User email로 저장된 Refresh Token 이 있는지 여부를 확인 후에 있을 경우 삭제를 한다.
-        if (redisTemplate.opsForValue().get("RT:"+authentication.getName())!=null){
-            // Refresh Token을 삭제
-            redisTemplate.delete("RT:"+authentication.getName());
-        }
-
-        // 해당 Access Token 유효시간을 가지고 와서 BlackList에 저장하기
-        Long expiration = jwtTokenProvider.getExpiration(tokenRequestDto.getAccessToken());
-        redisTemplate.opsForValue().set(tokenRequestDto.getAccessToken(),"logout",expiration, TimeUnit.MILLISECONDS);
-
-    }*/
 
     //유저 저장
     public void saveUser(SignUp signUp){
@@ -102,8 +86,8 @@ public class UserService {
 
     //토큰 재발급을 위한 reissue()
     public TokenInfo reissue(Reissue reissue){
-        // refresh token 검증
 
+        // refresh token 검증
         if(!jwtTokenProvider.validateToken(reissue.getRefreshToken())){
             throw new IllegalArgumentException("Refresh Token 정보가 유효하지 않습니다.");
         }
@@ -127,6 +111,28 @@ public class UserService {
         return tokenInfo;
     }
 
+    @Transactional
+    public void logout(HttpServletRequest request){
+
+        String accessToken = jwtTokenProvider.resolveAccessToken((HttpServletRequest) request);
+        // 로그아웃 하고 싶은 토큰이 유효한 지 먼저 검증하기
+        if (!jwtTokenProvider.validateToken(accessToken)){
+            throw new IllegalArgumentException("로그아웃 : 유효하지 않은 토큰입니다.");
+        }
+
+        // Access Token에서 User email을 가져온다
+        Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
+
+        // Redis에서 해당 User email로 저장된 Refresh Token 이 있는지 여부를 확인 후에 있을 경우 삭제를 한다.
+        if (redisTemplate.opsForValue().get("RT:"+authentication.getName())!=null){
+            // Refresh Token을 삭제
+            redisTemplate.delete("RT:"+authentication.getName());
+        }
+
+        // 해당 Access Token 유효시간을 가지고 와서 BlackList에 저장하기
+        Long expiration = jwtTokenProvider.getExpiration(accessToken);
+        redisTemplate.opsForValue().set(accessToken,"logout",expiration, TimeUnit.MILLISECONDS);
+    }
 
     public Map getProfile(int userIdx, int userIdx2) {
         List<Map> images = postMapper.getImage(userIdx);
