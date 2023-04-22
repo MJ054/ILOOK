@@ -59,11 +59,11 @@ public interface PostMapper {
 
     //좋아요
     @Insert("INSERT INTO ilook.like VALUES(0,#{user},#{post})")
-    void postLikes(@Param("user") int user,@Param("post") int post);
+    void createLike(@Param("user") int user,@Param("post") int post);
 
     //좋아요 취소
     @Delete("DELETE FROM ilook.like WHERE user_user_idx=#{user} AND post_post_idx=#{post}")
-    void postLikesDelete(@Param("user") int user,@Param("post") int post);
+    void deleteLike(@Param("user") int user,@Param("post") int post);
 
 
     @Select("SELECT deadline, category, path, post_idx FROM ilook.image i\n" +
@@ -88,15 +88,24 @@ public interface PostMapper {
             "(SELECT EXISTS (SELECT follow_idx FROM ilook.follow WHERE user_user_idx1=#{userIdx} AND user_user_idx2=\n" +
             "(SELECT user_user_idx FROM post WHERE post_idx=#{id}) limit 1))\n" +
             "AS follow_exsist,\n" +
-            "(SELECT count(*) FROM ilook.like WHERE post_post_idx = #{id})\n" +
-            "AS like_count,\n" +
             "(SELECT #{userIdx} = (SELECT user_user_idx FROM post WHERE post_idx=#{id}))\n" +
             "AS identification;")
     Map getPostDetail2(@Param("userIdx") String userIdx,@Param("id") int id);
 
-    @Select("SELECT post_idx, advertise, user_idx, profile_image, nickname, DATE_FORMAT(create_date, '%Y.%m.%d') AS create_date, DATE_FORMAT(deadline, '%Y.%m.%d') AS deadline, content FROM post p\n" +
-            "            INNER JOIN user u ON p.user_user_idx = u.user_idx\n" +
-            "            WHERE p.post_idx=#{id}")
+    @Select("SELECT COUNT(l.like_idx) AS like_count,\n" +
+            "       p.post_idx,\n" +
+            "       p.advertise,\n" +
+            "       p.user_user_idx,\n" +
+            "       u.profile_image,\n" +
+            "       u.nickname,\n" +
+            "       DATE_FORMAT(p.create_date, '%Y.%m.%d') AS create_date,\n" +
+            "       DATE_FORMAT(p.deadline, '%Y.%m.%d') AS deadline,\n" +
+            "       p.content\n" +
+            "FROM ilook.post p\n" +
+            "INNER JOIN ilook.user u ON p.user_user_idx = u.user_idx\n" +
+            "LEFT JOIN ilook.like l ON p.post_idx = l.post_post_idx\n" +
+            "WHERE p.post_idx = #{id}\n" +
+            "GROUP BY p.post_idx;")
     Map getPostDetail1(@Param("id") int id);
 
     @Select("SELECT product_idx, p1.category, brand, name, size FROM product p1\n" +

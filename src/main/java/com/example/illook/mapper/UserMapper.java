@@ -49,15 +49,14 @@ public interface UserMapper {
 
     //유저 프로필 가져오기
     @Select("SELECT user_idx, profile_image, nickname, count(post_idx) AS postCnt,\n" +
-            "(SELECT count(user_user_idx2) FROM follow WHERE follow.user_user_idx1=#{id}) AS followerCnt,\n" +
-            "(SELECT count(user_user_idx1) FROM follow WHERE follow.user_user_idx2=#{id}) AS followedCnt,\n" +
-            "(SELECT count(user_user_idx1) FROM follow WHERE follow.user_user_idx2=#{id} AND user_user_idx1 = #{userIdx}) AS follow,\n"+
-            "(SELECT #{id} = #{userIdx}) AS identification\n" +
+            "(SELECT count(user_user_idx2) FROM follow WHERE follow.user_user_idx1=#{userIdx}) AS followerCnt,\n" +
+            "(SELECT count(user_user_idx1) FROM follow WHERE follow.user_user_idx2=#{userIdx}) AS followedCnt\n" +
             "FROM ilook.user u\n" +
             "LEFT JOIN post p\n" +
             "ON u.user_idx = p.user_user_idx\n" +
-            "WHERE user_idx = #{id};")
-    Map getUserProfile(@Param("id") int id, @Param("userIdx") int userIdx);
+            "WHERE user_idx = #{userIdx};")
+    Map getUserProfile(@Param("userIdx") int userIdx);
+
 
     //사용자 수정
     @Update("UPDATE user SET nickname=#{nickname}, profile_image=#{image} WHERE user_idx=#{id}")
@@ -69,4 +68,7 @@ public interface UserMapper {
 
     @Select("SELECT * FROM ilook.user WHERE id=#{id} AND email=#{email}")
     Boolean checkUser(@Param("email") String email,@Param("id")  String id);
+
+    @Select("SELECT exists (SELECT count(user_user_idx1) FROM ilook.follow WHERE follow.user_user_idx2=#{profileUserIdx} AND user_user_idx1=#{userIdx}) AS follow;")
+    int getFollow(@Param("profileUserIdx") int profileUserIdx, @Param("userIdx") int userIdx);
 }

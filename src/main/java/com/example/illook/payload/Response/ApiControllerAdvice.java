@@ -27,4 +27,9 @@ public class ApiControllerAdvice {
     public ResponseEntity<ApiResponse<?>> MissingServletRequestParameterException(MissingServletRequestParameterException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.createError(e.getMessage()));
     }
+
+    /*@ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<?>> Execption(Exception e){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.createError(e.getMessage()));
+    }*/
 }

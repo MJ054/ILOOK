@@ -37,32 +37,28 @@ public class PostController {
 
     //게시글(OOTD) 데이터 추가
     @PostMapping("post/ootd")
-    public ApiResponse uploadData(@AuthenticationPrincipal User user, @RequestBody BoardFileVo boardFileVo){
+    public ApiResponse createOOTD(@AuthenticationPrincipal User user, @RequestBody BoardFileVo boardFileVo){
 
-        int createOotdId = postService.createData(boardFileVo, Integer.parseInt(user.getUserIdx()));
+        int createOotdId = postService.createOOTD(boardFileVo, Integer.parseInt(user.getUserIdx()));
         return ApiResponse.createSuccess(createOotdId);
     }
 
     //게시글(PICK) 데이터 추가
     @PostMapping("post/pick")
-    public ApiResponse uploadDataPick(@AuthenticationPrincipal User user, @RequestBody PickFileVo pickFileVo){
+    public ApiResponse createPICK(@AuthenticationPrincipal User user, @RequestBody PickFileVo pickFileVo){
 
-        int createPickId = postService.createDataPick(pickFileVo, Integer.parseInt(user.getUserIdx()));
+        int createPickId = postService.createPICK(pickFileVo, Integer.parseInt(user.getUserIdx()));
         return ApiResponse.createSuccess(createPickId);
     }
 
     //게시글 상세
     @GetMapping("post/{id}")
-    public ApiResponse<Map> getPost1(@AuthenticationPrincipal User user, @PathVariable int id) throws Exception{
-
-        if(user == null){
-            throw new IllegalArgumentException("로그인이 필요한 서비스입니다");
-        }
+    public ApiResponse<Map> getPostDetail(@AuthenticationPrincipal User user, @PathVariable int id) throws Exception{
 
         Map postDetail = postService.getPostDetail(user, id);
         return ApiResponse.createSuccess(postDetail);
-
     }
+
 
     //게시글 삭제
     @DeleteMapping("post/{id}")
@@ -74,16 +70,16 @@ public class PostController {
 
     //좋아요
     @PostMapping("post/like")
-    public ApiResponse postLikes(@AuthenticationPrincipal User user, @RequestParam int post){
+    public ApiResponse createLike(@AuthenticationPrincipal User user, @RequestParam int post){
 
-        mapper.postLikes(Integer.parseInt(user.getUserIdx()), post);
+        mapper.createLike(Integer.parseInt(user.getUserIdx()), post);
         return ApiResponse.createSuccessWithNoContent();
     }
     //좋아요 취소
     @DeleteMapping("post/like")
-    public ApiResponse postDeleteLike(@AuthenticationPrincipal User user, @RequestParam int post){
+    public ApiResponse deleteLike(@AuthenticationPrincipal User user, @RequestParam int post){
 
-        mapper.postLikesDelete(Integer.parseInt(user.getUserIdx()), post);
+        mapper.deleteLike(Integer.parseInt(user.getUserIdx()), post);
         return ApiResponse.createSuccessWithNoContent();
     }
 

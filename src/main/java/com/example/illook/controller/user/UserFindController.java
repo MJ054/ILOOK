@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.NoSuchElementException;
 
 import static com.example.illook.util.mybatisEmpty.empty;
 
@@ -33,7 +34,7 @@ public class UserFindController {
 
         //등록된 이메일인지 체크
         if(empty(mapper.checkEmailDuplicate(emailRequest.getEmail()))){
-            throw new IllegalStateException("존재하지 않는 이메일입니다");
+            throw new NoSuchElementException("존재하지 않는 이메일입니다");
         }
 
         //이메일로 인증코드 전송
@@ -57,14 +58,13 @@ public class UserFindController {
     @PostMapping("/user/help/pwInquiry")
     public ApiResponse findPwd(HttpServletRequest request, @RequestBody EmailRequest emailRequest, @RequestParam("id") String id, @RequestParam("inputCode") String inputCode){
 
-
         HttpSession session = request.getSession();
         if(!session.getAttribute(emailRequest.getEmail()).equals(inputCode)){
             throw new IllegalStateException("인증번호가 일치하지 않습니다");
         };
 
         if(empty(mapper.checkUser(emailRequest.getEmail(), id))){
-            throw new IllegalStateException("등록된 사용자가 없습니다");
+            throw new NoSuchElementException("등록된 사용자가 없습니다");
         }
         return ApiResponse.createSuccessWithNoContent();
     }

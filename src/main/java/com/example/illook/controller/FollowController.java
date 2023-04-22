@@ -17,7 +17,13 @@ public class FollowController {
     @PostMapping("follow")
     public ApiResponse follow(@AuthenticationPrincipal User user, @RequestParam int follower){
 
-        // 팔로우가 되어있는지 확인??
+        followMapper.follow(Integer.parseInt(user.getUserIdx()), follower);
+        return ApiResponse.createSuccessWithNoContent();
+    }
+
+    @GetMapping("follow1")
+    public ApiResponse follow1(@AuthenticationPrincipal User user, @RequestParam int follower){
+
         followMapper.follow(Integer.parseInt(user.getUserIdx()), follower);
         return ApiResponse.createSuccessWithNoContent();
     }

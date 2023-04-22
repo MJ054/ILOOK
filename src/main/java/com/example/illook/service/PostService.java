@@ -9,6 +9,7 @@ import com.example.illook.payload.BoardRequestDto.BoardFileVo;
 import com.example.illook.payload.BoardRequestDto.PickFileVo;
 import com.example.illook.util.FileHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostService {
@@ -68,7 +70,7 @@ public class PostService {
     }
 
     @Transactional
-    public int createData(BoardFileVo boardFileVo, int userIdx) {
+    public int createOOTD(BoardFileVo boardFileVo, int userIdx) {
 
         Post post = Post.builder()
                 .userIdx(userIdx)
@@ -85,7 +87,7 @@ public class PostService {
         return post.getPostIdx();
     }
 
-    public int createDataPick(PickFileVo pickFileVo, int userIdx) {
+    public int createPICK(PickFileVo pickFileVo, int userIdx) {
 
         Post post = Post.builder()
                 .userIdx(userIdx)
@@ -129,12 +131,18 @@ public class PostService {
     //게시글 상세 얻어오기
     public Map getPostDetail(User user, int id) {
 
+        log.info("User is "+user+"(if null, user is guest)");
+
         Map postDetail = postMapper.getPostDetail1(id);
-        Map postDetail2 = postMapper.getPostDetail2(user.getUserIdx(), id);
         List<Map> postProducts = postMapper.getProducts(id);
         List<Map> postImages = postMapper.getImages(id);
 
-        postDetail.putAll(postDetail2);
+        if(user != null){
+            //게스트가 아닐 경우
+            Map postDetail2 = postMapper.getPostDetail2(user.getUserIdx(), id);
+            postDetail.putAll(postDetail2);
+        }
+
         postDetail.put("product", postProducts);
         postDetail.put("image", postImages);
 

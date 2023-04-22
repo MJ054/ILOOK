@@ -1,15 +1,21 @@
-package com.example.illook.controller.user;
+package com.example.illook.controller.
+        user;
 
 import com.example.illook.mapper.ImageMapper;
 import com.example.illook.mapper.PostMapper;
 import com.example.illook.mapper.UserMapper;
 import com.example.illook.model.User;
 import com.example.illook.payload.Response.ApiResponse;
-import com.example.illook.payload.UserRequestDto.*;
+import com.example.illook.payload.UserRequestDto.EmailRequest;
+import com.example.illook.payload.UserRequestDto.Login;
+import com.example.illook.payload.UserRequestDto.SignUp;
+import com.example.illook.payload.UserRequestDto.TokenInfo;
 import com.example.illook.security.JwtTokenProvider;
 import com.example.illook.service.MailService;
 import com.example.illook.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
@@ -21,11 +27,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.example.illook.util.mybatisEmpty.empty;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class UserController {
@@ -74,7 +82,7 @@ public class UserController {
 
         //이메일 중복 체크
         if(!empty(userMapper.checkEmailDuplicate(emailRequest.getEmail()))){
-            throw new IllegalStateException("이미 가입된 이메일 입니다.");
+            throw new DuplicateKeyException("이미 가입된 이메일 입니다.");
         };
 
         //이메일로 인증번호 보내기
@@ -123,22 +131,51 @@ public class UserController {
     * test
     * */
     //내 프로필
-    @GetMapping("/user")
+   /* @GetMapping("/user")
     public ApiResponse getMyProfile(@AuthenticationPrincipal User user){
         int userIdx = Integer.parseInt(user.getUserIdx());
         Map profile = userService.getProfile(userIdx,userIdx);
         return ApiResponse.createSuccess(profile);
-    }
+    }*/
     /*
      * test
      * */
-    //다른 사람 프로필
-    @GetMapping("/user/{userIdx}")
-    public ApiResponse getUserProfile(@AuthenticationPrincipal User user, @PathVariable int userIdx){
-        Map profile = userService.getProfile(userIdx, Integer.parseInt(user.getUserIdx()));
+
+    //내 프로필(only user)
+    @GetMapping("/user/me/me")
+    public ApiResponse getMyProfile(@AuthenticationPrincipal User user){
+        int userIdx = Integer.parseInt(user.getUserIdx());
+        Map profile = userService.getProfile(userIdx);
         return ApiResponse.createSuccess(profile);
     }
 
+    //다른 사람 프로필
+    @GetMapping("/user/{userIdx}")
+    public ApiResponse getUserProfile(@AuthenticationPrincipal User user, @PathVariable int userIdx){
+
+        Map map = new HashMap();
+
+        if(userIdx != Integer.parseInt(user.getUserIdx()))
+        {
+            //다른사람프로필
+            int follow = userMapper.getFollow(userIdx, Integer.parseInt(user.getUserIdx()));
+            map.put("follow", follow);
+            map.put("role", 1);
+        }else{
+            //내프로필
+            map.put("role", 0);
+        }
+
+        Map map2 = userService.getProfile(userIdx);
+        map.putAll(map2);
+
+        return ApiResponse.createSuccess(map);
+    }
+
+    @GetMapping("/user/id")
+    public ApiResponse getUserId(@AuthenticationPrincipal User user){
+        return ApiResponse.createSuccess(Integer.parseInt(user.getUserIdx()));
+    }
 
     //유저 삭제
     @DeleteMapping("/user")
@@ -155,7 +192,7 @@ public class UserController {
 
         //닉네임 중복 확인
         if(!empty(userMapper.checkNicknameDuplicate(nickname))){
-            throw new IllegalStateException("사용중인 닉네임입니다");
+            throw new DuplicateKeyException("사용중인 닉네임입니다");
         }
 
         userService.updateUser(files, nickname, user);
@@ -182,6 +219,7 @@ public class UserController {
     public ApiResponse login(@Valid @RequestBody Login login, HttpServletResponse response) {
 
         TokenInfo tokenInfo = userService.login(login);
+        System.out.println("aaa");
         //프론트에 보낼 AT,RT
         jwtTokenProvider.setHeaderAccessToken(response, tokenInfo.getAccessToken());
         jwtTokenProvider.setHeaderRefreshToken(response, tokenInfo.getRefreshToken());
@@ -190,16 +228,23 @@ public class UserController {
 
     //토큰 재발급
     @PostMapping("/user/reissue")
-    public ApiResponse reissue(@Valid @RequestBody Reissue reissue, HttpServletResponse response, HttpServletRequest request) {
+    public ApiResponse reissue(HttpServletResponse response, HttpServletRequest request) {
 
-        TokenInfo tokenInfo = userService.reissue(reissue, request);
+        String accessToken = jwtTokenProvider.resolveAccessToken((HttpServletRequest) request);
+        String refreshToken = jwtTokenProvider.resolveRefreshToken((HttpServletRequest) request);
+
+        if(refreshToken == null){
+            throw new IllegalArgumentException("토큰이 없습니다");
+        }
+
+        TokenInfo tokenInfo = userService.reissue(accessToken, refreshToken, request);
         //프론트에 보낼 AT,RT
         jwtTokenProvider.setHeaderAccessToken(response, tokenInfo.getAccessToken());
         jwtTokenProvider.setHeaderRefreshToken(response, tokenInfo.getRefreshToken());
         return ApiResponse.createSuccessWithNoContent();
     }
 
-
+    //로그아웃
     @PostMapping("/user/logout")
     public ApiResponse logout(HttpServletRequest request) {
         userService.logout(request);

@@ -23,10 +23,10 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
-        String accessToken = jwtTokenProvider.resolveAccessToken((HttpServletRequest) request);
+            String accessToken = jwtTokenProvider.resolveAccessToken((HttpServletRequest) request);
 
-        //aceess 토큰 유효성 체크
-            if (accessToken !=null  && jwtTokenProvider.validateToken(accessToken, (HttpServletRequest) request)){
+            //aceess 토큰 유효성 체크
+            if (accessToken != null && jwtTokenProvider.validateToken(accessToken, (HttpServletRequest) request)) {
                 //Redis에 해당 accessToken logout 여부를 확인
                 String isLogout = (String) redisTemplate.opsForValue().get(accessToken);
                 //토큰이 유효하면 SecurityContextHolder에 저장

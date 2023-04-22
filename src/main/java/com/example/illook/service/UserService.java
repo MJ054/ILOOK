@@ -5,7 +5,6 @@ import com.example.illook.mapper.UserMapper;
 import com.example.illook.model.Image;
 import com.example.illook.model.User;
 import com.example.illook.payload.UserRequestDto.Login;
-import com.example.illook.payload.UserRequestDto.Reissue;
 import com.example.illook.payload.UserRequestDto.SignUp;
 import com.example.illook.payload.UserRequestDto.TokenInfo;
 import com.example.illook.security.JwtTokenProvider;
@@ -74,10 +73,10 @@ public class UserService {
         //사용자 인증
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(login.getId(), login.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        log.info("User is {}", authentication);
 
         //토큰 생성
         TokenInfo tokenInfo = jwtTokenProvider.createAllToken(authentication);
-
         //리프레시 토큰 redis에 저장(expirationTime 설정을 통해 자동 삭제 처리)
         redisTemplate.opsForValue().set("RT:"+authentication.getName(),
                 tokenInfo.getRefreshToken(), tokenInfo.getRefreshTokenExpirationTime(), TimeUnit.MICROSECONDS);
@@ -85,20 +84,20 @@ public class UserService {
     }
 
     //토큰 재발급을 위한 reissue()
-    public TokenInfo reissue(Reissue reissue, HttpServletRequest request){
+    public TokenInfo reissue(String AT, String RT , HttpServletRequest request){
 
         // refresh token 검증
-        if(!jwtTokenProvider.validateToken(reissue.getRefreshToken(), request)){
+        if(!jwtTokenProvider.validateToken(RT, request)){
             throw new IllegalArgumentException("Refresh Token 정보가 유효하지 않습니다.");
         }
 
         // Access Token 에서 User email 를 가져옴
-        Authentication authentication = jwtTokenProvider.getAuthentication(reissue.getAccessToken());
+        Authentication authentication = jwtTokenProvider.getAuthentication(AT);
 
         // Redis 에서 User email 을 기반으로 저장된 Refresh Token 값을 가져옴
         String refreshToken = redisTemplate.opsForValue().get("RT:"+authentication.getName());
 
-        if(refreshToken != null && !refreshToken.equals(reissue.getRefreshToken())){
+        if(refreshToken != null && !refreshToken.equals(RT)){
             throw new IllegalStateException("Refresh Token 정보가 일치하지 않습니다");
         }
         // 새로운 토큰 생성
@@ -111,7 +110,6 @@ public class UserService {
         return tokenInfo;
     }
 
-    @Transactional
     public void logout(HttpServletRequest request){
 
         String accessToken = jwtTokenProvider.resolveAccessToken((HttpServletRequest) request);
@@ -134,10 +132,14 @@ public class UserService {
         redisTemplate.opsForValue().set(accessToken,"logout",expiration, TimeUnit.MILLISECONDS);
     }
 
-    public Map getProfile(int userIdx, int userIdx2) {
+    @Transactional
+    public Map getProfile(int userIdx) {
         List<Map> images = postMapper.getImage(userIdx);
-        Map data = userMapper.getUserProfile(userIdx,userIdx2);
+        Map data = userMapper.getUserProfile(userIdx);
+
         data.put("images",images);
         return data;
     }
+
+
 }

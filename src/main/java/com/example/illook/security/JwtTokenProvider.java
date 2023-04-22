@@ -9,14 +9,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -55,8 +57,8 @@ public class JwtTokenProvider {
                 .build();
     }
 
-    public String createAccessToken(String userPk, String roles){
-        Claims claims = Jwts.claims().setSubject(userPk);
+    public String createAccessToken(String userEmail, String roles){
+        Claims claims = Jwts.claims().setSubject(userEmail);
         claims.put("roles", roles);
         Date now = new Date();
 
@@ -69,9 +71,9 @@ public class JwtTokenProvider {
     }
 
     // jwt refresh 토큰 생성
-    public String createRefreshToken(String userPk, String roles) {
+    public String createRefreshToken(String userEmail, String roles) {
 
-        Claims claims = Jwts.claims().setSubject(userPk);
+        Claims claims = Jwts.claims().setSubject(userEmail);
         claims.put("roles", roles);
         Date now = new Date();
         return Jwts.builder()
@@ -103,10 +105,11 @@ public class JwtTokenProvider {
                 Arrays.stream(claims.get("roles").toString().split(","))
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
-
+        System.out.println(authorities);
         // UserDetails 객체를 만들어서 Authentication 리턴
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
-        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+        UserDetails principal = userDetailsService.loadUserByUsername(this.getUserPk(accessToken));
+        System.out.println(claims.getSubject());
+        return new UsernamePasswordAuthenticationToken(principal,"", principal.getAuthorities());
     }
 
     // Request의 Header에서 AccessToken 값을 가져옵니다. "authorization" : "token'
@@ -121,24 +124,6 @@ public class JwtTokenProvider {
             return request.getHeader("refreshToken");
         return null;
     }
-
-    // 엑세스 토큰의 유효성 + 만료일자 확인
-    /*public boolean validateAccessToken(String jwtToken, HttpServletRequest request) {
-        try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
-            return !claims.getBody().getExpiration().before(new Date());
-        }
-        catch (ExpiredJwtException e) {
-            e.printStackTrace();
-            request.setAttribute("exception", "1111");
-            request.setAttribute("jwtToken",jwtToken);
-        } catch (JwtException e) {
-            e.printStackTrace();
-            request.setAttribute("exception", "2222");
-        }
-        return false;
-    }*/
-
 
     // 리프레시 토큰의 유효성 + 만료일자 확인
     public boolean validateToken(String jwtToken, HttpServletRequest request) {
