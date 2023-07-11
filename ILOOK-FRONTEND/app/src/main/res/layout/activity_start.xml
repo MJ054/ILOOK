@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".StartActivity">
+
+
+    <Button
+        android:id="@+id/start_email_btn"
+        android:layout_width="250dp"
+        android:layout_height="53dp"
+        android:layout_marginTop="150dp"
+        android:text="이메일로 로그인"
+        android:textColor="#B3B1B1"
+        android:textStyle="bold"
+        app:backgroundTint="#FFFFFF"
+        app:layout_constraintEnd_toEndOf="@+id/start_naver_btn"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/start_naver_btn"
+        app:layout_constraintTop_toBottomOf="@+id/start_naver_btn" />
+
+    <TextView
+        android:id="@+id/start_register_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="가입하기"
+        app:layout_constraintEnd_toEndOf="@+id/start_email_btn"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="@+id/start_email_btn"
+        app:layout_constraintTop_toBottomOf="@+id/start_email_btn" />
+
+    <Button
+        android:id="@+id/start_naver_btn"
+        android:layout_width="250dp"
+        android:layout_height="53dp"
+        android:layout_marginTop="4dp"
+        android:text="네이버로 시작하기"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:backgroundTint="#4CAF50"
+        app:layout_constraintEnd_toEndOf="@+id/start_google_btn"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/start_google_btn"
+        app:layout_constraintTop_toBottomOf="@+id/start_google_btn" />
+
+    <Button
+        android:id="@+id/start_google_btn"
+        android:layout_width="250dp"
+        android:layout_height="53dp"
+        android:layout_marginTop="24dp"
+        android:text="구글로 시작하기"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:backgroundTint="#BABABA"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/start_ilook" />
+
+    <TextView
+        android:id="@+id/start_ilook"
+        android:layout_width="144dp"
+        android:layout_height="78dp"
+        android:layout_marginTop="200dp"
+        android:text="ILOOK"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="50dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

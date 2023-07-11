@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/image_profile_comment"
+        android:layout_width="45dp"
+        android:layout_height="37dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/cafe1"
+        app:civ_border_color="#f3f3f3"
+        app:civ_border_overlay="true"
+        app:civ_border_width="1dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <TextView
+        android:id="@+id/textView6_comment_nickname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:text="@sky_blue_99"
+        android:textColor="#000000"
+        app:layout_constraintStart_toEndOf="@+id/image_profile_comment"
+        app:layout_constraintTop_toTopOf="@+id/image_profile_comment" />
+
+    <TextView
+        android:id="@+id/textView14_comment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="무조건 첫번째요!"
+        android:textColor="#000000"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="@+id/textView6_comment_nickname"
+        app:layout_constraintTop_toBottomOf="@+id/textView6_comment_nickname" />
+
+    <TextView
+        android:id="@+id/textView25_comment_reply"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:text="댓글달기"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/textView24_comment_date"
+        app:layout_constraintStart_toEndOf="@+id/textView24_comment_date"
+        app:layout_constraintTop_toTopOf="@+id/textView24_comment_date"
+        tools:visibility="gone" />
+
+    <TextView
+        android:id="@+id/textView24_comment_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="2023.02.21"
+        app:layout_constraintStart_toStartOf="@+id/textView14_comment"
+        app:layout_constraintTop_toBottomOf="@+id/textView14_comment" />
+
+    <TextView
+        android:id="@+id/textView26_comment_reply_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="답글 0개 보기"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/textView24_comment_date"
+        app:layout_constraintTop_toBottomOf="@+id/textView24_comment_date" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView_reply"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginLeft="32dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView26_comment_reply_list" />
+
+    <TextView
+        android:id="@+id/textView14"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recyclerView_reply" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
