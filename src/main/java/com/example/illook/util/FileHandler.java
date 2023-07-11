@@ -24,7 +24,7 @@ public class FileHandler {
 
         // 전달되어 온 파일이 존재할 경우
         if(!CollectionUtils.isEmpty(multipartFiles)) {
-            // 파일명을 업로드 한 날짜로 변환하여 저장
+            // 파일명을 업로드 한 날짜로 변환하여 저장'
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter dateTimeFormatter =
                     DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -33,6 +33,7 @@ public class FileHandler {
             // 프로젝트 디렉터리 내의 저장을 위한 절대 경로 설정
             // 경로 구분자 File.separator 사용
             String absolutePath = new File("").getAbsolutePath() + File.separator + File.separator;
+            System.out.println("absolutePaht"+absolutePath);
 
             // 파일을 저장할 세부 경로 지정
             String path = "images" + File.separator + current_date;
@@ -127,7 +128,6 @@ public class FileHandler {
                     file = new File(absolutePath + path + File.separator + new_file_name);
                 }
                 }
-
                 multipartFile.transferTo(file);
 
                 // 파일 권한 설정(쓰기, 읽기)

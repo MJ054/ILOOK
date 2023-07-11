@@ -14,12 +14,11 @@ public interface ImageMapper {
     List<String> getImage(@Param("id") int id);
 
     //날짜 순서대로
-    //@Select("SELECT post_idx, thumbnail, DATEDIFF(deadline ,create_date) AS date FROM ilook.post WHERE category=#{category} LIMIT #{offset},#{limit}")
     @Select("SELECT post_idx, path, DATEDIFF(deadline, now()) AS date FROM ilook.post p\n" +
             "INNER JOIN image i\n" +
             "ON p.post_idx = i.post_post_idx\n" +
             "WHERE category=#{category} AND path LIKE CONCAT('%', 'thumbnail', '%')\n" +
-            "ORDER BY create_date asc LIMIT #{offset},#{limit}")
+            "ORDER BY create_date desc LIMIT #{offset},#{limit}")
     List<Map> getMainImages(@Param("category") String category,@Param("offset") int offset,@Param("limit") int limit);
 
 

@@ -31,8 +31,8 @@ public interface PostMapper {
     @Delete("DELETE FROM image WHERE post_post_idx=#{id};")
     void deleteImageP(@Param("id") int id);
 
-
     //게시글 수정
+
     //게시글 이미지 삭제
     @Delete("DELETE FROM image WHERE path=#{image.path} AND name=#{image.name}")
     void deleteImage(@Param("image") Image image);

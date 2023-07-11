@@ -25,12 +25,11 @@ public class PostController {
 
     //게시글 이미지 업로드
     // @RequestParam 어노테이션은 required = true가 디폴트
-    @PostMapping("post/image")
+    @PostMapping("/post/image")
     public ApiResponse uploadImages(
             @RequestParam(value = "file") List<MultipartFile> files,
             @RequestParam("key") String key
     ) throws Exception{
-
         postService.createImage(files, key);
         return ApiResponse.createSuccessWithNoContent();
     }
@@ -85,7 +84,7 @@ public class PostController {
 
 
     //메인 페이지 사진
-    @GetMapping("post/main/{category}")
+    @GetMapping("/post/main/{category}")
     public ApiResponse getMainImages(@PathVariable String category, @RequestParam int offset, @RequestParam int limit){
         List<Map> map = imageMapper.getMainImages(category, offset, limit);
         if(map.isEmpty()) return null;

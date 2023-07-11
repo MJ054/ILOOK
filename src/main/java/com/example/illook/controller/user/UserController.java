@@ -4,6 +4,7 @@ package com.example.illook.controller.
 import com.example.illook.mapper.ImageMapper;
 import com.example.illook.mapper.PostMapper;
 import com.example.illook.mapper.UserMapper;
+import com.example.illook.model.AccessToken;
 import com.example.illook.model.User;
 import com.example.illook.payload.Response.ApiResponse;
 import com.example.illook.payload.UserRequestDto.EmailRequest;
@@ -16,6 +17,7 @@ import com.example.illook.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
@@ -25,7 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,8 @@ public class UserController {
     private final UserService userService;
     private final MailService mailService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisTemplate<String, String> redisTemplate;
+
 
     //아이디 중복확인
     @PostMapping("/user/check/id/duplication")
@@ -92,17 +95,15 @@ public class UserController {
 
     //3. 인증번호 일치여부
     @PostMapping("user/check/code")
-    public ApiResponse checkAuth(HttpServletRequest request,@RequestBody EmailRequest emailRequest, @RequestParam("inputCode") String inputCode){
-        HttpSession session = request.getSession();
+    public ApiResponse checkAuth(@RequestBody EmailRequest emailRequest, @RequestParam("inputCode") String inputCode){
 
-        System.out.println(emailRequest);
+        System.out.println(emailRequest.getEmail());
         System.out.println(inputCode);
-        System.out.println(session.getAttribute(emailRequest.getEmail()));
-        System.out.println(session.getAttribute(inputCode));
 
-        if(!session.getAttribute(emailRequest.getEmail()).equals(inputCode)){
+        String key = redisTemplate.opsForValue().get(inputCode);
+        if(!key.equals(emailRequest.getEmail())){
             throw new IllegalStateException("인증번호가 일치하지 않습니다");
-        };
+        }
 
         return ApiResponse.createSuccess("인증번호가 일치합니다");
     }
@@ -126,20 +127,6 @@ public class UserController {
        userService.saveUser(signUp);
        return ApiResponse.createSuccessWithNoContent();
     }
-
-    /*
-    * test
-    * */
-    //내 프로필
-   /* @GetMapping("/user")
-    public ApiResponse getMyProfile(@AuthenticationPrincipal User user){
-        int userIdx = Integer.parseInt(user.getUserIdx());
-        Map profile = userService.getProfile(userIdx,userIdx);
-        return ApiResponse.createSuccess(profile);
-    }*/
-    /*
-     * test
-     * */
 
     //내 프로필(only user)
     @GetMapping("/user/me/me")
@@ -217,12 +204,15 @@ public class UserController {
     * */
     @PostMapping("/user/login")
     public ApiResponse login(@Valid @RequestBody Login login, HttpServletResponse response) {
-
         TokenInfo tokenInfo = userService.login(login);
-        System.out.println("aaa");
         //프론트에 보낼 AT,RT
         jwtTokenProvider.setHeaderAccessToken(response, tokenInfo.getAccessToken());
         jwtTokenProvider.setHeaderRefreshToken(response, tokenInfo.getRefreshToken());
+        return ApiResponse.createSuccessWithNoContent();
+    }
+
+    @PostMapping("/user/loginAccessToken")
+    public ApiResponse login(@RequestBody AccessToken accessToken) {
         return ApiResponse.createSuccessWithNoContent();
     }
 
@@ -233,14 +223,10 @@ public class UserController {
         String accessToken = jwtTokenProvider.resolveAccessToken((HttpServletRequest) request);
         String refreshToken = jwtTokenProvider.resolveRefreshToken((HttpServletRequest) request);
 
-        if(refreshToken == null){
-            throw new IllegalArgumentException("토큰이 없습니다");
-        }
-
         TokenInfo tokenInfo = userService.reissue(accessToken, refreshToken, request);
         //프론트에 보낼 AT,RT
         jwtTokenProvider.setHeaderAccessToken(response, tokenInfo.getAccessToken());
-        jwtTokenProvider.setHeaderRefreshToken(response, tokenInfo.getRefreshToken());
+       // jwtTokenProvider.setHeaderRefreshToken(response, tokenInfo.getRefreshToken());
         return ApiResponse.createSuccessWithNoContent();
     }
 
@@ -250,6 +236,11 @@ public class UserController {
         userService.logout(request);
         return ApiResponse.createSuccessWithNoContent();
     }
+
+    /*@GetMapping("/user/search")
+    public ApiResponse getSearch(){
+        return ApiResponse.createSuccessWithNoContent();
+    }*/
 
 }
 

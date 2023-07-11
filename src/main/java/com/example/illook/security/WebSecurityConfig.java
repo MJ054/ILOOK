@@ -1,8 +1,8 @@
 package com.example.illook.security;
 
 import com.example.illook.mapper.UserMapper;
-import com.example.illook.security.OAuth2.OAuth2SuccessHandler;
 import com.example.illook.payload.Response.ApiResponse;
+import com.example.illook.security.OAuth2.OAuth2SuccessHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -60,13 +59,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 토큰 기반 인증이므로 세션 역시 사용하지 않습니다.
                 .and()
                 .authorizeRequests() // 요청에 대한 사용권한 체크
-                .antMatchers("/follow").hasAuthority("ROLE_USER")
-                .antMatchers("/comment/**").hasAuthority("ROLE_USER")
-                .antMatchers(HttpMethod.GET, "/user/me/me").hasAuthority("ROLE_USER")
-                .antMatchers(HttpMethod.DELETE, "/user", "/post/**").hasRole("USER")
-                .antMatchers(HttpMethod.PATCH, "/user").hasRole("USER")
-                .antMatchers(HttpMethod.POST, "/post/**").hasRole("USER")
-                .anyRequest().permitAll() // 그외 나머지 요청은 누구나 접근 가능
+                //.antMatchers("/user/help/**", "/user/check/**","/user/mailConfirm", "/user/login","/user/reissue","/pictures","/user/reissue").permitAll()
+                //.antMatchers(HttpMethod.POST, "/user").permitAll()
+                //.anyRequest().hasRole("USER") // 그외 나머지 요청은 누구나 접근 가능
+                .anyRequest().permitAll()
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate),
                         UsernamePasswordAuthenticationFilter.class);
@@ -90,6 +86,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     public void response(HttpServletResponse response, String message) throws IOException {
+        response.reset();
         response.setContentType("text/html; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
@@ -103,7 +100,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
             Base64.Decoder decoder = Base64.getDecoder();
             String payload = new String(decoder.decode(splitJwt[1] .getBytes()));
-            System.out.println("payload"+payload);
             return new ObjectMapper().readValue(payload, HashMap.class);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());

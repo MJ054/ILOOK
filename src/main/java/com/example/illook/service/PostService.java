@@ -63,10 +63,11 @@ public class PostService {
     public List<Image> createImage(List<MultipartFile> files, String key) throws Exception {
         //DB는 롤백이 가능하지만 저장된 파일은 롤백이 안됨 -> 삭제처리 필요
         List<Image> imageList = fileHandler.parseFileInfo(files, Integer.parseInt(key));
-        for (Image image : imageList) {
-            postMapper.saveImages(image);
-        }
+            for (Image image : imageList) {
+                postMapper.saveImages(image);
+            }
         return imageList;
+
     }
 
     @Transactional
@@ -87,6 +88,7 @@ public class PostService {
         return post.getPostIdx();
     }
 
+    @Transactional
     public int createPICK(PickFileVo pickFileVo, int userIdx) {
 
         Post post = Post.builder()

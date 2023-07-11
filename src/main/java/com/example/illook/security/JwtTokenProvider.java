@@ -94,7 +94,6 @@ public class JwtTokenProvider {
     public Authentication getAuthentication(String accessToken){
         // 토큰 복호화
         Claims claims = parseClaims(accessToken);
-
         System.out.println(claims);
         if (claims.get("roles") == null) {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
@@ -105,10 +104,8 @@ public class JwtTokenProvider {
                 Arrays.stream(claims.get("roles").toString().split(","))
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
-        System.out.println(authorities);
         // UserDetails 객체를 만들어서 Authentication 리턴
-        UserDetails principal = userDetailsService.loadUserByUsername(this.getUserPk(accessToken));
-        System.out.println(claims.getSubject());
+        UserDetails principal = userDetailsService.loadUserByUsername(claims.get("sub").toString());
         return new UsernamePasswordAuthenticationToken(principal,"", principal.getAuthorities());
     }
 
@@ -118,6 +115,7 @@ public class JwtTokenProvider {
             return request.getHeader("accessToken");
         return null;
     }
+
     // Request의 Header에서 RefreshToken 값을 가져옵니다. "authorization" : "token'
     public String resolveRefreshToken(HttpServletRequest request) {
         if(request.getHeader("refreshToken") != null )
@@ -130,14 +128,14 @@ public class JwtTokenProvider {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
             return !claims.getBody().getExpiration().before(new Date());
-        }
-        catch (ExpiredJwtException e) {
+        }catch (ExpiredJwtException e){
             e.printStackTrace();
-            request.setAttribute("exceptionType","ExpiredJwt");
-        }catch (JwtException e) {
+            request.setAttribute("exceptionType", "ExpiredJwt");
+            return false;
+        }catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     public Long getExpiration(String accessToken) {
