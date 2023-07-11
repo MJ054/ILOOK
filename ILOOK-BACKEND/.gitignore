@@ -19,6 +19,7 @@ bin/
 
 ### IntelliJ IDEA ###
 ILOOK-BACKEND/.idea
+.idea
 *.iws
 *.iml
 *.ipr
