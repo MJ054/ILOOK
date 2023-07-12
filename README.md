@@ -15,11 +15,10 @@
 ## 5. 실행화면
 **회원가입**<br>
 **아이디/비밀번호 찾기**<br>
-![새로운 프로젝트](https://github.com/MJ054/ILOOK/assets/109513458/9251bd7e-27e2-4534-a395-165df7660064)
+![새로운 프로젝트1111](https://github.com/MJ054/ILOOK/assets/109513458/69baf63a-5f52-4fba-bae9-6a7fc5a27cef)
 
 **SNS 게시물**<br>
-![새로운 프로젝트4](https://github.com/MJ054/ILOOK/assets/109513458/e3992c29-b865-4706-877d-4b50a94d5a00)
+![새로운 프로젝트4](https://github.com/MJ054/ILOOK/assets/109513458/d25e10ab-12b0-47a8-be62-f1b0f2d28b07)
 
 **SNS 게시물 생성/삭제**<br>
-![새로운 프로젝트8](https://github.com/MJ054/ILOOK/assets/109513458/bce970b4-bd58-41b9-8c34-3b1079b6cc92)
-
+![새로운 프로젝트8](https://github.com/MJ054/ILOOK/assets/109513458/712a6642-c3bd-47d0-a1ed-26b5923f96f4)
