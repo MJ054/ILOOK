@@ -21,5 +21,5 @@
 ![새로운 프로젝트4](https://github.com/MJ054/ILOOK/assets/109513458/e3992c29-b865-4706-877d-4b50a94d5a00)
 
 **SNS 게시물 생성/삭제**<br>
-![새로운 프로젝트4](https://github.com/MJ054/ILOOK/assets/109513458/e3992c29-b865-4706-877d-4b50a94d5a00)
+![새로운 프로젝트8](https://github.com/MJ054/ILOOK/assets/109513458/bce970b4-bd58-41b9-8c34-3b1079b6cc92)
 
